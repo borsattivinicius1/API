@@ -1,27 +1,38 @@
-import express, { json } from 'express'
-
+import express from 'express'
+import { PrismaClient } from '@prisma/client'
 
 const app = express()
+const prisma = new PrismaClient()
+
 app.use(express.json())
 
+// Criar usuário no banco
+app.post('/usuarios', async (req, res) => {
+  const { nome, email, senha, age } = req.body
 
-const users=[]
+  try {
+    const novoUsuario = await prisma.usuario.create({
+      data: {
+        nome,
+        email,
+        senha,
+        age
+      }
+    })
 
-app.post('/usuarios', (req,res) =>{
+    res.status(201).json(novoUsuario)
 
-        users.push(req.body)
-        res.status(201).json(req.body)
+  } catch (error) {
+    res.status(400).json({ erro: "Erro ao criar usuário" })
+  }
 })
 
-
-
-app.get('/usuarios' , (req,res) =>{
-        res.status(200).json(users)
+// Listar usuários do banco
+app.get('/usuarios', async (req, res) => {
+  const usuarios = await prisma.usuario.findMany()
+  res.status(200).json(usuarios)
 })
 
-app.listen(3332)
-
-
-
-
-// borsattivinicius1 , Senha: v1s9hqLyQ91J4UnV
+app.listen(3332, () => {
+  console.log("Servidor rodando na porta 3332")
+})
